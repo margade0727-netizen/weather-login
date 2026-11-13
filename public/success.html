@@ -1,0 +1,86 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Weather - Home</title>
+</head>
+<body>
+    <h1>Welcome</h1>
+
+    <img id="profilePic" alt="Profile picture" width="100">
+
+    <p id="user">Checking login...</p>
+
+    <h2>Ulaanbaatar Weather</h2>
+    <p id="weather">Checking weather...</p>
+
+    <script>
+        async function loadUser() {
+            const response = await fetch("/api/me");
+
+            if (!response.ok) {
+                window.location.href = "/";
+                return null;
+            }
+
+            const user = await response.json();
+
+            document.getElementById("user").textContent =
+                "Logged in as " + user.name + " (" + user.email + ")";
+
+            const profilePic = document.getElementById("profilePic");
+
+            if (user.picture) {
+                profilePic.src = user.picture;
+            } else {
+                profilePic.hidden = true;
+            }
+
+            return user;
+        }
+
+        async function showWeather() {
+            const weatherElement = document.getElementById("weather");
+
+            try {
+                const user = await loadUser();
+
+                if (!user) {
+                    weatherElement.textContent =
+                        "Login to get weather data.";
+                    return;
+                }
+
+                const response = await fetch(
+                    "https://api.open-meteo.com/v1/forecast" +
+                    "?latitude=47.9184" +
+                    "&longitude=106.9177" +
+                    "&current=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m" +
+                    "&timezone=Asia%2FUlaanbaatar"
+                );
+
+                if (!response.ok) {
+                    throw new Error("Weather API request failed");
+                }
+
+                const data = await response.json();
+                const current = data.current;
+
+                weatherElement.textContent =
+                    "Temperature: " + current.temperature_2m + " °C" +
+                    " | Humidity: " + current.relative_humidity_2m + "%" +
+                    " | Wind: " + current.wind_speed_10m + " km/h" +
+                    " | Precipitation: " + current.precipitation + " mm" +
+                    " | Updated: " + current.time;
+
+            } catch (error) {
+                console.error(error);
+                weatherElement.textContent =
+                    "Unable to load weather. Please try again.";
+            }
+        }
+
+        showWeather();
+    </script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Weather HTML LOGIN</title>
+    <script src="https://accounts.google.com/gsi/client" async></script>
+</head>
+<body>
+    <h1>Login page</h1>
+    <p>Only Google login supported</p>
+
+    <div id="g_id_onload"
+        data-client_id="48418985021-3ctdkce0tnkt2ie56ahl1up16ikruef9.apps.googleusercontent.com"
+        data-callback="handleLogin">
+    </div>
+
+    <div class="g_id_signin" data-type="standard"></div>
+
+    <p id="user">Not logged in</p>
+    <p id="error"></p>
+
+    <script>
+        async function handleLogin(response) {
+            document.getElementById("error").textContent = "";
+
+            try {
+                const result = await fetch("/api/login", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        credential: response.credential
+                    })
+                });
+
+                const data = await result.json();
+
+                if (!result.ok) {
+                    throw new Error(data.error || "Login failed");
+                }
+
+                document.getElementById("user").textContent =
+                    "Logged in as " + data.name;
+
+                window.location.href = "/success.html";
+            } catch (error) {
+                document.getElementById("error").textContent =
+                    error.message;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -7,10 +7,14 @@
 </head>
 <body>
     <h1>Login page</h1>
-    <p>Only Google login supported</p>
+    <p>Login with your account or Google.</p>
+    <h2>Login</h2>
+    <form id="loginForm"><input id="loginEmail" type="email" placeholder="Email" required><input id="loginPassword" type="password" placeholder="Password" required><button>Login</button></form>
+    <h2>Register</h2>
+    <form id="registerForm"><input id="firstName" placeholder="First name" required><input id="lastName" placeholder="Last name" required><input id="registerEmail" type="email" placeholder="Email" required><input id="registerPassword" type="password" minlength="8" placeholder="Password (8+ characters)" required><button>Create account</button></form>
 
     <div id="g_id_onload"
-        data-client_id="48418985021-3ctdkce0tnkt2ie56ahl1up16ikruef9.apps.googleusercontent.com"
+        data-client_id=""
         data-callback="handleLogin">
     </div>
 
@@ -20,29 +24,15 @@
     <p id="error"></p>
 
     <script>
+        const message = document.getElementById("error");
+        async function send(url, body) { const result = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }); const data = await result.json(); if (!result.ok) throw new Error(data.error); return data; }
+        loginForm.onsubmit = async (e) => { e.preventDefault(); try { await send("/api/login/local", { email: loginEmail.value, password: loginPassword.value }); location.href = "/success.html"; } catch (e) { message.textContent = e.message; } };
+        registerForm.onsubmit = async (e) => { e.preventDefault(); try { await send("/api/register", { firstName: firstName.value, lastName: lastName.value, email: registerEmail.value, password: registerPassword.value }); location.href = "/success.html"; } catch (e) { message.textContent = e.message; } };
         async function handleLogin(response) {
             document.getElementById("error").textContent = "";
 
             try {
-                const result = await fetch("/api/login", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        credential: response.credential
-                    })
-                });
-
-                const data = await result.json();
-
-                if (!result.ok) {
-                    throw new Error(data.error || "Login failed");
-                }
-
-                document.getElementById("user").textContent =
-                    "Logged in as " + data.name;
-
+                await send("/api/login", { credential: response.credential });
                 window.location.href = "/success.html";
             } catch (error) {
                 document.getElementById("error").textContent =

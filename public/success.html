@@ -10,6 +10,7 @@
     <img id="profilePic" alt="Profile picture" width="100">
 
     <p id="user">Checking login...</p>
+    <button id="logout">Logout</button>
 
     <h2>Ulaanbaatar Weather</h2>
     <p id="weather">Checking weather...</p>
@@ -26,7 +27,7 @@
             const user = await response.json();
 
             document.getElementById("user").textContent =
-                "Logged in as " + user.name + " (" + user.email + ")";
+                "Logged in as " + user.name + " (" + user.email + ") via " + user.authProvider;
 
             const profilePic = document.getElementById("profilePic");
 
@@ -80,6 +81,7 @@
             }
         }
 
+        document.getElementById("logout").onclick = async () => { await fetch("/api/logout", { method: "POST" }); window.location.href = "/"; };
         showWeather();
     </script>
 </body>
